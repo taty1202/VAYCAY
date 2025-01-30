@@ -1,0 +1,25 @@
+//
+//  .gitignore
+//  VAYCAY
+//
+//  Created by Tatyana Araya on 1/29/25.
+//
+# Ignore API keys and secret files
+Secrets.xcconfig
+.env
+GoogleService-Info.plist
+
+
+# Ignore Xcode-specific files
+*.xcworkspace
+xcuserdata/
+DerivedData/
+*.xcuserstate
+
+# Ignore Firebase keys
+GoogleService-Info.plist
+
+# Ignore package managers
+Pods/
+Carthage/
+
