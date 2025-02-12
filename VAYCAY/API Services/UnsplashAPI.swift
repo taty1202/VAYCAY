@@ -7,11 +7,13 @@
 
 import Foundation
 
-class UnsplashAPI {
-    private let unsplashApiKey: String
+class UnsplashAPI: ObservableObject {
+    static let shared = UnsplashAPI()
 
-    init() {
-        // Fetch API Key from Info.plist
+    private let unsplashApiKey: String
+    private let baseUrl = "https://api.unsplash.com/search/photos"
+
+    private init() {
         if let key = Bundle.main.object(forInfoDictionaryKey: "UnsplashAPIKey") as? String, !key.isEmpty {
             self.unsplashApiKey = key
         } else {
@@ -19,8 +21,7 @@ class UnsplashAPI {
         }
     }
 
-    private let baseUrl = "https://api.unsplash.com/search/photos"
-
+    // Fetch Unsplash images based on a search query
     func fetchImages(for keyword: String, completion: @escaping ([String]?) -> Void) {
         let query = keyword.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "travel"
         guard let url = URL(string: "\(baseUrl)?query=\(query)&client_id=\(unsplashApiKey)&per_page=10&content_filter=high") else {
@@ -29,15 +30,9 @@ class UnsplashAPI {
             return
         }
 
-        // Print the final URL to verify correctness
         print("🚀 Fetching Unsplash Images: \(url.absoluteString)")
 
-        // Configure session with timeout intervals
-        let sessionConfig = URLSessionConfiguration.default
-        sessionConfig.timeoutIntervalForRequest = 30  // Timeout for request
-        sessionConfig.timeoutIntervalForResource = 60 // Timeout for entire resource load
-        let session = URLSession(configuration: sessionConfig)
-
+        let session = URLSession.shared
         session.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("❌ Error fetching images: \(error.localizedDescription)")
@@ -45,7 +40,6 @@ class UnsplashAPI {
                 return
             }
 
-            // Handle rate limit logging
             if let httpResponse = response as? HTTPURLResponse {
                 print("ℹ️ Remaining Requests: \(httpResponse.allHeaderFields["X-Ratelimit-Remaining"] ?? "N/A")")
             }
@@ -67,8 +61,14 @@ class UnsplashAPI {
             }
         }.resume()
     }
-}
 
+    // Function to get a single image URL
+    func getImageURL(for keyword: String, completion: @escaping (String?) -> Void) {
+        fetchImages(for: keyword) { urls in
+            completion(urls?.first)
+        }
+    }
+}
 
 // Models
 struct UnsplashURLs: Decodable {
@@ -88,3 +88,6 @@ struct UnsplashSearchResponse: Decodable {
     let total_pages: Int
     let results: [UnsplashImage]
 }
+
+
+

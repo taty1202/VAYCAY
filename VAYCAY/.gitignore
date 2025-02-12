@@ -8,6 +8,7 @@
 Secrets.xcconfig
 .env
 GoogleService-Info.plist
+Info.plist
 
 
 # Ignore Xcode-specific files
@@ -18,6 +19,8 @@ DerivedData/
 
 # Ignore Firebase keys
 GoogleService-Info.plist
+Info.plist
+
 
 # Ignore package managers
 Pods/

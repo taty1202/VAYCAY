@@ -5,40 +5,60 @@
 //  Created by Tatyana Araya on 1/22/25.
 //
 
+
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var userProfileVM = UserProfileViewModel()
-    @StateObject private var authVM = AuthViewModel() // Added AuthViewModel
+    @StateObject private var authVM = AuthViewModel()
+    @StateObject private var firestoreVM = FirestoreViewModel()
+    @StateObject private var favoritesVM = FavoritesViewModel()
+    @StateObject private var unsplashAPI = UnsplashAPI.shared
 
     var body: some View {
-        Group {
-            if authVM.user == nil {
-                SignInView(authViewModel: authVM) // Show Sign-In if user is not logged in
-            } else {
-                TabView {
-                    SearchView()
-                        .tabItem {
-                            Image(systemName: "magnifyingglass")
-                            Text("Search")
-                        }
-                    
-                    FavoritesView()
-                        .tabItem {
-                            Image(systemName: "heart")
-                            Text("Favorites")
-                        }
+        if authVM.user == nil {
+            SignInView(authViewModel: authVM)
+                .environmentObject(authVM)
+                .environmentObject(firestoreVM)
+                .environmentObject(favoritesVM)
+                .environmentObject(unsplashAPI)
+        } else {
+            TabView {
+                ExploreView()
+                    .environmentObject(authVM)
+                    .environmentObject(firestoreVM)
+                    .environmentObject(favoritesVM)
+                    .environmentObject(unsplashAPI)
+                    .tabItem {
+                        Image(systemName: "house")
+                        Text("Explore")
+                    }
 
-                    UserProfileView(viewModel: userProfileVM, authViewModel: authVM) // Pass authVM to profile
-                        .tabItem {
-                            Image(systemName: "person")
-                            Text("Profile")
-                        }
-                }
+                FavoritesView()
+                    .environmentObject(authVM)
+                    .environmentObject(firestoreVM)
+                    .environmentObject(favoritesVM)
+                    .environmentObject(unsplashAPI)
+                    .tabItem {
+                        Image(systemName: "heart")
+                        Text("Favorites")
+                    }
+
+                UserProfileView(authViewModel: authVM)
+                    .environmentObject(firestoreVM)
+                    .environmentObject(favoritesVM)
+                    .environmentObject(unsplashAPI)
+                    .tabItem {
+                        Image(systemName: "person")
+                        Text("Profile")
+                    }
             }
-        }
-        .onAppear {
-            authVM.checkAuthState() // Check sign-in state on app launch
+            .tint(.blue) // Fixes selected tab color
+            .onAppear {
+                firestoreVM.fetchUserPreferences()
+                favoritesVM.fetchFavorites()
+                firestoreVM.fetchUserProfile()
+                authVM.checkAuthState()
+            }
         }
     }
 }
